@@ -1,8 +1,6 @@
 # Import python packages
 import streamlit as st
 import requests
-smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-st.text(smoothiefroot_response)
 from snowflake.snowpark.functions import col
 
 helpful_links = [
@@ -57,3 +55,6 @@ if ingredients_List:
     if time_to_insert:
         session.sql(my_insert_stmt).collect()
         st.success('Your Smoothie '+ name_on_order+ ' is ordered!', icon="✅")
+
+smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+st.text(smoothiefroot_response)
