@@ -1,6 +1,6 @@
 # Import python packages
 import streamlit as st
-from snowflake.snowpark.context import get_active_session
+from snowflake.snowpark.functions import col
 
 helpful_links = [
     "https://docs.streamlit.io",
@@ -13,6 +13,9 @@ helpful_links = [
 st.title(":cup_with_straw: Customize your Smoothie :cup_with_straw:")
 st.write("Choose the fruits you want in your custom Smoothie")
 
+name_on_order = st.text_input("Name on Smoothie")
+st.write("The name of your Smoothie will be:", name_on_order)
+
 #option = st.selectbox(
 #    "What is your favorite fruit?",
 #    ("Banana", "Strawberries", "Peaches"),
@@ -22,15 +25,15 @@ st.write("Choose the fruits you want in your custom Smoothie")
 
 #st.write("You selected:", option)
 
-from snowflake.snowpark.functions import col
-
-session = get_active_session()
+cnx = st. connection ("snowflake")
+session = cnx.session()
 my_dataframe = session.table("smoothies.public.fruit_options").select (col ('FRUIT_NAME'))
 #st.dataframe(data=my_dataframe, use_container_width=True)
 
 ingredients_List = st.multiselect(
     "Choose up to 5 ingredients",
-    my_dataframe
+    my_dataframe,
+    max_selections=5
 )
 
 if ingredients_List:
@@ -40,14 +43,14 @@ if ingredients_List:
 
     for fruit_chosen in ingredients_List:
         ingredients_string += fruit_chosen + " "
-    st.write(ingredients_string)
+    #st.write(ingredients_string)
 
-    my_insert_stmt = """ insert into smoothies.public.orders(ingredients)
-            values ('""" + ingredients_string + """')"""
+    my_insert_stmt = """ insert into smoothies.public.orders(ingredients,NAME_ON_ORDER)
+            values ('""" + ingredients_string + """','""" + name_on_order + """' )"""
 
     #st.write(my_insert_stmt)
     time_to_insert = st.button("Submit order")
 
     if time_to_insert:
         session.sql(my_insert_stmt).collect()
-        st.success('Your Smoothie is ordered!', icon="✅")
+        st.success('Your Smoothie '+ name_on_order+ ' is ordered!', icon="✅")
